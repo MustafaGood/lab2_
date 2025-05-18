@@ -1,81 +1,199 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<html lang="sv">
+
 <head>
-    <title>Login</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logga in</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f5f5f5;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(120deg, #e3eafc 0%, #f3f6fa 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            perspective: 1200px;
+            position: relative;
+            overflow: hidden;
         }
-        .login-container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        .center-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
+
+        .login-3d-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at 30% 30%, #e3eafc 60%, #1976d2 100%);
+            box-shadow: 0 40px 80px 0 rgba(25, 118, 210, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+            border-radius: 30px;
+            transform: translate(-50%, -50%) rotateY(-8deg) rotateX(8deg) scale(1.05);
+            z-index: 0;
+            filter: blur(2px) brightness(1.08);
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2.8rem 2.2rem 2.2rem 2.2rem;
+            border-radius: 22px;
+            box-shadow: 0 12px 48px rgba(25, 118, 210, 0.22), 0 4px 16px rgba(0, 0, 0, 0.13);
+            width: 100%;
+            max-width: 370px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.2s, transform 0.2s;
+            z-index: 1;
+            position: relative;
+        }
+
+        .login-container:hover {
+            box-shadow: 0 12px 48px rgba(25, 118, 210, 0.18), 0 4px 16px rgba(0, 0, 0, 0.10);
+            transform: rotateY(-2deg) rotateX(1deg) scale(1.03);
+        }
+
+        .login-container h2 {
+            margin-bottom: 2.2rem;
+            color: #174ea6;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            font-size: 2rem;
+        }
+
         .form-group {
-            margin-bottom: 1rem;
+            width: 100%;
+            margin-bottom: 1.3rem;
         }
+
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
+            margin-bottom: 0.45rem;
+            color: #222b45;
+            font-size: 1.05rem;
+            font-weight: 500;
         }
-        input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 0.50rem;
+            border: 1.5px solid #cfd8dc;
+            border-radius: 10px;
+            background: #f9fbfd;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(25, 118, 210, 0.03);
         }
-        button {
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #1976d2;
+            outline: none;
+            box-shadow: 0 0 0 2px #e3eafc;
+        }
+
+        .dev-icon {
+            font-size: 1.5rem;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            color: #1976d2;
+            text-shadow: 0 2px 8px #e3eafc;
+        }
+
+        .login-btn {
             width: 100%;
-            padding: 0.75rem;
-            background-color: #007bff;
-            color: white;
+            padding: 0.9rem;
+            background: linear-gradient(90deg, #1976d2 60%, #1565c0 100%);
+            color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 1rem;
+            box-shadow: 0 4px 18px rgba(25, 118, 210, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+            position: relative;
+            overflow: hidden;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            margin-top: 0.2rem;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .login-btn:hover {
+            background: linear-gradient(90deg, #1565c0 60%, #1976d2 100%);
+            transform: translateY(-2px) scale(1.02);
         }
-        .error {
-            color: red;
-            margin-bottom: 1rem;
+
+        .login-btn:active {
+            background: linear-gradient(90deg, #174ea6 60%, #1565c0 100%);
+            box-shadow: 0 2px 6px rgba(25, 118, 210, 0.10);
+            transform: translateY(2px) scale(0.98);
         }
+
+        .btn-3d-text {
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 6px #1565c0, 0 1px 0 #fff;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.13) 0%, rgba(25, 118, 210, 0.09) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-3d-bg {
+                width: 98vw;
+                height: 98vw;
+            }
+
+            .login-container {
+                padding: 1.5rem 0.7rem 1.2rem 0.7rem;
+                max-width: 98vw;
+            }
+
+            .login-container h2 {
+                font-size: 1.3rem;
+            }
+        }
+
     </style>
 </head>
+
 <body>
-    <div class="login-container">
-        <h2>Logga in</h2>
-        <div th:if="${param.error}" class="error">
-            Felaktigt användarnamn eller lösenord.
-        </div>
-        <div th:if="${param.logout}" class="error">
-            Du har loggats ut.
-        </div>
-        <form th:action="@{/login}" method="post">
+    <div class="center-wrapper">
+        <div class="login-3d-bg"></div>
+        <form class="login-container" method="post" action="/login">
+            <h2><span class="dev-icon">&#128187;</span> Logga in</h2>
             <div class="form-group">
-                <label for="username">Användarnamn:</label>
-                <input type="text" id="username" name="username" required autofocus/>
+                <label for="username">Användarnamn</label>
+                <input type="text" id="username" name="username" required autofocus>
             </div>
             <div class="form-group">
-                <label for="password">Lösenord:</label>
-                <input type="password" id="password" name="password" required/>
+                <label for="password">Lösenord</label>
+                <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit">Logga in</button>
+            <button class="login-btn" type="submit">
+                <span class="btn-3d-text">Logga in</span>
+            </button>
         </form>
     </div>
 </body>
-</html> 
+
+</html>

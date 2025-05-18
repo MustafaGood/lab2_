@@ -1,37 +1,63 @@
 package com.mustafa.laboration2.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
+// Denna klass representerar en plats i systemet
 @Entity
 @Table(name = "platser")
 public class Plats {
+    // Unikt ID för platsen
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Platsens namn
+    @NotBlank(message = "Namn är obligatoriskt")
+    @Size(min = 2, max = 100, message = "Namn måste vara mellan 2 och 100 tecken")
     @Column(nullable = false)
     private String namn;
 
+    // Kategorin som platsen tillhör
+    @NotNull(message = "Kategori är obligatorisk")
     @ManyToOne
     @JoinColumn(name = "kategori_id")
     private Kategori kategori;
 
+    // Användaren som skapade platsen
+    @NotBlank(message = "Användar-ID är obligatoriskt")
     private String anvandarId;
 
+    // Platsens status (privat eller publik)
+    @NotNull(message = "Status är obligatorisk")
     @Enumerated(EnumType.STRING)
     private Status status = Status.PUBLIK;
 
+    // När platsen skapades
     private LocalDateTime datumSkapad;
+    // När platsen senast ändrades
     private LocalDateTime datumAndrad;
+
+    // Beskrivning av platsen
+    @Size(max = 1000, message = "Beskrivning får inte vara längre än 1000 tecken")
     private String beskrivning;
+
+    // Platsens koordinater
+    @Size(max = 100, message = "Koordinater får inte vara längre än 100 tecken")
     private String koordinater;
+
+    // Om platsen är borttagen eller inte
     private Boolean isDeleted = false;
 
+    // Möjliga statusvärden för en plats
     public enum Status {
         PRIVAT, PUBLIK
     }
 
+    // Getter och setter för ID
     public Long getId() {
         return id;
     }
@@ -40,6 +66,7 @@ public class Plats {
         this.id = id;
     }
 
+    // Getter och setter för namn
     public String getNamn() {
         return namn;
     }
@@ -48,6 +75,7 @@ public class Plats {
         this.namn = namn;
     }
 
+    // Getter och setter för kategori
     public Kategori getKategori() {
         return kategori;
     }
@@ -56,6 +84,7 @@ public class Plats {
         this.kategori = kategori;
     }
 
+    // Getter och setter för användar-ID
     public String getAnvandarId() {
         return anvandarId;
     }
@@ -64,6 +93,7 @@ public class Plats {
         this.anvandarId = anvandarId;
     }
 
+    // Getter och setter för status
     public Status getStatus() {
         return status;
     }
@@ -72,6 +102,7 @@ public class Plats {
         this.status = status;
     }
 
+    // Getter och setter för datum skapad
     public LocalDateTime getDatumSkapad() {
         return datumSkapad;
     }
@@ -80,6 +111,7 @@ public class Plats {
         this.datumSkapad = datumSkapad;
     }
 
+    // Getter och setter för datum ändrad
     public LocalDateTime getDatumAndrad() {
         return datumAndrad;
     }
@@ -88,6 +120,7 @@ public class Plats {
         this.datumAndrad = datumAndrad;
     }
 
+    // Getter och setter för beskrivning
     public String getBeskrivning() {
         return beskrivning;
     }
@@ -96,6 +129,7 @@ public class Plats {
         this.beskrivning = beskrivning;
     }
 
+    // Getter och setter för koordinater
     public String getKoordinater() {
         return koordinater;
     }
@@ -104,6 +138,7 @@ public class Plats {
         this.koordinater = koordinater;
     }
 
+    // Getter och setter för isDeleted
     public Boolean getIsDeleted() {
         return isDeleted;
     }
