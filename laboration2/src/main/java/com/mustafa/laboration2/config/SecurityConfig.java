@@ -34,6 +34,7 @@ public class SecurityConfig {
             // Konfigurerar vilka URL:er som är tillåtna och vilka som kräver inloggning
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login").permitAll()  // Inloggningssidan är tillgänglig för alla
+                .requestMatchers("/", "/index.html").permitAll()  // Startsidan är tillgänglig för alla
                 .requestMatchers(HttpMethod.GET, "/api/kategorier/**").permitAll()  // Kategorier kan läsas av alla
                 .requestMatchers(HttpMethod.GET, "/api/platser", "/api/platser/{id}").permitAll()  // Platser kan läsas av alla
                 .requestMatchers(HttpMethod.POST, "/api/kategorier").hasRole("ADMIN")  // Endast admin kan lägga till kategorier

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startsida</title>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(120deg, #e3eafc 0%, #f3f6fa 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .start-container {
+            background: #fff;
+            padding: 2.5rem 2rem;
+            border-radius: 22px;
+            box-shadow: 0 12px 48px rgba(25, 118, 210, 0.22), 0 4px 16px rgba(0, 0, 0, 0.13);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        h1 {
+            color: #174ea6;
+            font-size: 2.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .start-btn {
+            width: 220px;
+            padding: 1rem;
+            background: linear-gradient(90deg, #1976d2 60%, #1565c0 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(25, 118, 210, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+            margin-bottom: 0.5rem;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(90deg, #1565c0 60%, #1976d2 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .start-btn:active {
+            background: linear-gradient(90deg, #174ea6 60%, #1565c0 100%);
+            box-shadow: 0 2px 6px rgba(25, 118, 210, 0.10);
+            transform: translateY(2px) scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+            .start-container {
+                padding: 1.2rem 0.5rem;
+                max-width: 98vw;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .start-btn {
+                width: 98vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="start-container">
+        <h1>Välkommen!</h1>
+        <a href="/login"><button class="start-btn">Logga in</button></a>
+        <a href="/kategorier"><button class="start-btn">Kategorier</button></a>
+        <a href="/platser"><button class="start-btn">Platser</button></a>
+
+    </div>
+</body>
+
+</html>
