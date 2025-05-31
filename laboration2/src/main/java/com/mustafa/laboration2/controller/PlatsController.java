@@ -1,11 +1,20 @@
 package com.mustafa.laboration2.controller;
 
+import com.mustafa.laboration2.dto.CreatePlatsRequest;
+import com.mustafa.laboration2.dto.PlatsResponse;
+import com.mustafa.laboration2.entity.Kategori;
 import com.mustafa.laboration2.entity.Plats;
+import com.mustafa.laboration2.repository.KategoriRepository;
 import com.mustafa.laboration2.repository.PlatsRepository;
 import jakarta.validation.Valid;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.FieldError;
@@ -16,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // Denna klass hanterar alla förfrågningar som gäller platser
 @RestController
@@ -24,6 +34,11 @@ public class PlatsController {
     // Ansluter till databasen för platser
     @Autowired
     private PlatsRepository platsRepository;
+
+    @Autowired
+    private KategoriRepository kategoriRepository;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     // Hämtar alla publika platser som inte är borttagna
     @GetMapping
@@ -41,6 +56,17 @@ public class PlatsController {
             .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    // Hämtar alla publika platser inom en specifik kategori
+    @GetMapping("/category/{kategoriId}")
+    public ResponseEntity<List<Plats>> getPublikaByKategori(@PathVariable Long kategoriId) {
+        Optional<Kategori> kategori = kategoriRepository.findById(kategoriId);
+        if (kategori.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        List<Plats> platser = platsRepository.findByKategoriAndStatusAndIsDeletedFalse(kategori.get(), Plats.Status.PUBLIK);
+        return ResponseEntity.ok(platser);
+    }
+
     // Hämtar alla platser som tillhör den inloggade användaren
     @GetMapping("/mina")
     public ResponseEntity<List<Plats>> getMinaPlatser(@AuthenticationPrincipal UserDetails user) {
@@ -48,17 +74,71 @@ public class PlatsController {
         return ResponseEntity.ok(platser);
     }
 
+    // Hämtar platser inom en viss radie
+    @GetMapping("/nearby")
+    public ResponseEntity<?> getNearbyPlaces(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(defaultValue = "5000") double radius,
+            @AuthenticationPrincipal UserDetails user) {
+        
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                    "error", "Unauthorized",
+                    "message", "Authentication required"
+                ));
+        }
+
+        try {
+            List<Plats> platser = platsRepository.findWithinRadius(longitude, latitude, radius);
+            List<PlatsResponse> response = platser.stream()
+                .map(PlatsResponse::new)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                    "error", "Internal Server Error",
+                    "message", e.getMessage()
+                ));
+        }
+    }
+
     // Skapar en ny plats
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Plats plats, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> create(@Valid @RequestBody CreatePlatsRequest request, 
+            Authentication authentication) {
         try {
-            // Sätter användar-ID och datum för den nya platsen
-            plats.setAnvandarId(user.getUsername());
+            // Hitta kategorin
+            Optional<Kategori> kategori = kategoriRepository.findById(request.getKategoriId());
+            if (kategori.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Kategorin kunde inte hittas");
+            }
+
+            // Skapa Point-objekt från koordinater
+            Point koordinater = geometryFactory.createPoint(
+                new Coordinate(request.getLongitude(), request.getLatitude()));
+            koordinater.setSRID(4326);
+
+            // Skapa ny plats
+            Plats plats = new Plats();
+            plats.setNamn(request.getNamn());
+            plats.setKategori(kategori.get());
+            plats.setBeskrivning(request.getBeskrivning());
+            plats.setKoordinater(koordinater);
+            plats.setAnvandarId(authentication.getName());
             plats.setDatumSkapad(LocalDateTime.now());
             plats.setDatumAndrad(LocalDateTime.now());
-            plats.setStatus(plats.getStatus() == null ? Plats.Status.PUBLIK : plats.getStatus());
+            plats.setStatus(Plats.Status.PUBLIK);
+
             Plats saved = platsRepository.save(plats);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new PlatsResponse(saved));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Ett fel uppstod vid skapande av plats: " + e.getMessage());
