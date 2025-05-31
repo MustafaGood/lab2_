@@ -51,19 +51,19 @@ public class PlatsController {
     @GetMapping("/{id}")
     public ResponseEntity<Plats> getPublikPlats(@PathVariable Long id) {
         Optional<Plats> plats = platsRepository.findById(id)
-            .filter(p -> p.getStatus() == Plats.Status.PUBLIK && !p.getIsDeleted());
+                .filter(p -> p.getStatus() == Plats.Status.PUBLIK && !p.getIsDeleted());
         return plats.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    // Hämtar alla publika platser inom en specifik kategori
     @GetMapping("/category/{kategoriId}")
     public ResponseEntity<List<Plats>> getPublikaByKategori(@PathVariable Long kategoriId) {
         Optional<Kategori> kategori = kategoriRepository.findById(kategoriId);
         if (kategori.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        List<Plats> platser = platsRepository.findByKategoriAndStatusAndIsDeletedFalse(kategori.get(), Plats.Status.PUBLIK);
+        List<Plats> platser = platsRepository.findByKategoriAndStatusAndIsDeletedFalse(kategori.get(),
+                Plats.Status.PUBLIK);
         return ResponseEntity.ok(platser);
     }
 
@@ -74,59 +74,53 @@ public class PlatsController {
         return ResponseEntity.ok(platser);
     }
 
-    // Hämtar platser inom en viss radie
     @GetMapping("/nearby")
     public ResponseEntity<?> getNearbyPlaces(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam(defaultValue = "5000") double radius,
             @AuthenticationPrincipal UserDetails user) {
-        
+
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of(
-                    "error", "Unauthorized",
-                    "message", "Authentication required"
-                ));
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of(
+                            "error", "Unauthorized",
+                            "message", "Authentication required"));
         }
 
         try {
             List<Plats> platser = platsRepository.findWithinRadius(longitude, latitude, radius);
             List<PlatsResponse> response = platser.stream()
-                .map(PlatsResponse::new)
-                .collect(Collectors.toList());
+                    .map(PlatsResponse::new)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response);
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of(
-                    "error", "Internal Server Error",
-                    "message", e.getMessage()
-                ));
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of(
+                            "error", "Internal Server Error",
+                            "message", e.getMessage()));
         }
     }
 
     // Skapar en ny plats
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody CreatePlatsRequest request, 
+    public ResponseEntity<?> create(@Valid @RequestBody CreatePlatsRequest request,
             Authentication authentication) {
         try {
-            // Hitta kategorin
             Optional<Kategori> kategori = kategoriRepository.findById(request.getKategoriId());
             if (kategori.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Kategorin kunde inte hittas");
+                        .body("Kategorin kunde inte hittas");
             }
 
-            // Skapa Point-objekt från koordinater
             Point koordinater = geometryFactory.createPoint(
-                new Coordinate(request.getLongitude(), request.getLatitude()));
+                    new Coordinate(request.getLongitude(), request.getLatitude()));
             koordinater.setSRID(4326);
 
-            // Skapa ny plats
             Plats plats = new Plats();
             plats.setNamn(request.getNamn());
             plats.setKategori(kategori.get());
@@ -141,27 +135,27 @@ public class PlatsController {
             return ResponseEntity.status(HttpStatus.CREATED).body(new PlatsResponse(saved));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Ett fel uppstod vid skapande av plats: " + e.getMessage());
+                    .body("Ett fel uppstod vid skapande av plats: " + e.getMessage());
         }
     }
 
     // Uppdaterar en befintlig plats
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Plats plats, 
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Plats plats,
             @AuthenticationPrincipal UserDetails user) {
         try {
             // Kontrollerar om platsen finns
             Optional<Plats> optionalPlats = platsRepository.findById(id);
             if (optionalPlats.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Platsen kunde inte hittas");
+                        .body("Platsen kunde inte hittas");
             }
-            
+
             // Kontrollerar om användaren har rätt att uppdatera platsen
             Plats existing = optionalPlats.get();
             if (!existing.getAnvandarId().equals(user.getUsername())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Du har inte behörighet att uppdatera denna plats");
+                        .body("Du har inte behörighet att uppdatera denna plats");
             }
 
             // Uppdaterar platsens information
@@ -171,12 +165,12 @@ public class PlatsController {
             existing.setDatumAndrad(LocalDateTime.now());
             existing.setBeskrivning(plats.getBeskrivning());
             existing.setKoordinater(plats.getKoordinater());
-            
+
             Plats updated = platsRepository.save(existing);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Ett fel uppstod vid uppdatering av plats: " + e.getMessage());
+                    .body("Ett fel uppstod vid uppdatering av plats: " + e.getMessage());
         }
     }
 
@@ -188,14 +182,14 @@ public class PlatsController {
             Optional<Plats> optionalPlats = platsRepository.findById(id);
             if (optionalPlats.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Platsen kunde inte hittas");
+                        .body("Platsen kunde inte hittas");
             }
-            
+
             // Kontrollerar om användaren har rätt att ta bort platsen
             Plats plats = optionalPlats.get();
             if (!plats.getAnvandarId().equals(user.getUsername())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Du har inte behörighet att ta bort denna plats");
+                        .body("Du har inte behörighet att ta bort denna plats");
             }
 
             // Markerar platsen som borttagen
@@ -205,7 +199,7 @@ public class PlatsController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Ett fel uppstod vid borttagning av plats: " + e.getMessage());
+                    .body("Ett fel uppstod vid borttagning av plats: " + e.getMessage());
         }
     }
 
