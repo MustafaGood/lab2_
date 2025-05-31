@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import org.locationtech.jts.geom.Point;
 
 // Denna klass representerar en plats i systemet
 @Entity
@@ -46,8 +47,8 @@ public class Plats {
     private String beskrivning;
 
     // Platsens koordinater
-    @Size(max = 100, message = "Koordinater får inte vara längre än 100 tecken")
-    private String koordinater;
+    @Column(columnDefinition = "POINT SRID 4326")
+    private Point koordinater;
 
     // Om platsen är borttagen eller inte
     private Boolean isDeleted = false;
@@ -130,11 +131,11 @@ public class Plats {
     }
 
     // Getter och setter för koordinater
-    public String getKoordinater() {
+    public Point getKoordinater() {
         return koordinater;
     }
 
-    public void setKoordinater(String koordinater) {
+    public void setKoordinater(Point koordinater) {
         this.koordinater = koordinater;
     }
 
