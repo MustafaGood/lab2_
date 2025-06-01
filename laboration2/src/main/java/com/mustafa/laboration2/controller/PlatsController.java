@@ -69,8 +69,12 @@ public class PlatsController {
 
     // Hämtar alla platser som tillhör den inloggade användaren
     @GetMapping("/mina")
-    public ResponseEntity<List<Plats>> getMinaPlatser(@AuthenticationPrincipal UserDetails user) {
-        List<Plats> platser = platsRepository.findByAnvandarIdAndIsDeletedFalse(user.getUsername());
+    public ResponseEntity<List<Plats>> getMinaPlatser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = authentication.getName();
+        List<Plats> platser = platsRepository.findByAnvandarIdAndIsDeletedFalse(username);
         return ResponseEntity.ok(platser);
     }
 
