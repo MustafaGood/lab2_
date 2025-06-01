@@ -38,7 +38,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll() // Öppna login
-                .requestMatchers("/api/platser/nearby").authenticated() // Skydda denna endpoint
+                .requestMatchers("/api/platser/mina", "/api/platser/nearby").authenticated() // Skydda dessa endpoints
                 .anyRequest().permitAll() // Övriga endpoints kan du justera efter behov
             )
             .sessionManagement(session -> session
